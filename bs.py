@@ -23,7 +23,7 @@ def main(stdin, stdout):
   def unicode_replacement(matchobj):
     groups = list(matchobj.groups())
     if not groups[1]: groups[1] = ''
-    return '"%s" (%s)%s' % (groups[3], groups[0], groups[1])
+    return '"{0!s}" ({1!s}){2!s}'.format(groups[3], groups[0], groups[1])
   source=stdin.read()
   source = original_para.sub(dummy_replacement, source)
   source = cap_a_z.sub(uppercase_ref, source)

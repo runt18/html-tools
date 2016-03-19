@@ -17,7 +17,7 @@ class IdGenerator:
         return re.sub('\s', lambda x: '-', self.title_from_string(string))
 
     def title_from_string(self, string):
-        return ("%s %s" % (self.prefix, string)).lower()
+        return ("{0!s} {1!s}".format(self.prefix, string)).lower()
 
 class Switch(IdGenerator):
     def __init__(self, switch_var, prefix):
@@ -29,20 +29,20 @@ class Switch(IdGenerator):
         self.cases.append(case)
 
     def text(self):
-        return """switch using %s
-%s""" % (self.variable, "\n".join([case.text() for case in self.cases]))
+        return """switch using {0!s}
+{1!s}""".format(self.variable, "\n".join([case.text() for case in self.cases]))
 
     def html(self):
-        return """<dl class=switch>%s
-</dl>""" % "\n".join([case.html() for case in self.cases])
+        return """<dl class=switch>{0!s}
+</dl>""".format("\n".join([case.html() for case in self.cases]))
 
     def varHtml(self):
-        return """<var title="%s">%s</var>""" % (
+        return """<var title="{0!s}">{1!s}</var>""".format(
             self.title_from_string(self.variable), self.variable)
 
 class Case(IdGenerator):
     def __init__(self, case_thingy, switch):
-        IdGenerator.__init__(self, "%s %s:" % (switch.prefix, switch.variable))
+        IdGenerator.__init__(self, "{0!s} {1!s}:".format(switch.prefix, switch.variable))
         self.thingy = case_thingy
         self.conditions = []
         self.switch = switch
@@ -51,20 +51,20 @@ class Case(IdGenerator):
         self.conditions.append(condition)
 
     def text(self):
-        return """  case %s
-%s""" % (self.thingy, "\n".join([condition.text() for condition in self.conditions]))
+        return """  case {0!s}
+{1!s}""".format(self.thingy, "\n".join([condition.text() for condition in self.conditions]))
 
     def html(self):
-        return """<dt>If %s is "%s"</dt>
+        return """<dt>If {0!s} is "{1!s}"</dt>
 <dd>
 <p>Run the appropriate substeps from the following list:</p>
-<dl class=switch>%s
+<dl class=switch>{2!s}
 </dl>
-</dd>""" % (self.switch.varHtml(), self.thingyHtml(),
+</dd>""".format(self.switch.varHtml(), self.thingyHtml(),
             "\n".join([condition.html() for condition in self.conditions]))
 
     def thingyHtml(self):
-        return """<dfn id=%s title="%s">%s</dfn>""" % (
+        return """<dfn id={0!s} title="{1!s}">{2!s}</dfn>""".format(
             self.id_from_string(self.thingy),
             self.title_from_string(self.thingy),
             self.thingy)
@@ -90,21 +90,21 @@ class Condition:
         self.statements.append(statement)
 
     def text(self):
-        return """    %s=%s</dt>
+        return """    {0!s}={1!s}</dt>
 <dd>
-%s
-</dd>""" % (self.variable, self.conditionalText, "\n".join([statement.text() for statement in self.statements]))
+{2!s}
+</dd>""".format(self.variable, self.conditionalText, "\n".join([statement.text() for statement in self.statements]))
 
     def html(self):
-        return """<dt>If %s is %s</dt>
+        return """<dt>If {0!s} is {1!s}</dt>
 <dd>
-%s
-</dd>""" % (self.varHtml(), self.conditionalHtml(), "\n".join([statement.html() for statement in self.statements]))
+{2!s}
+</dd>""".format(self.varHtml(), self.conditionalHtml(), "\n".join([statement.html() for statement in self.statements]))
 
     def varHtml(self, var=None):
         if var is None:
             var = self.variable
-        return """<var title="">%s</var>""" % var
+        return """<var title="">{0!s}</var>""".format(var)
 
     def conditionalHtml(self):
         conditional = ""
@@ -115,7 +115,7 @@ class Condition:
         else:
             conditional = single_characters[self.characters]
         if self.ifunless is not None:
-            conditional += " and %s is %s" % (
+            conditional += " and {0!s} is {1!s}".format(
                 self.varHtml(self.subcondition),
                 "true" if self.ifunless == "if" else "false")
         return conditional
@@ -136,13 +136,13 @@ class Otherwise(Condition):
 
     def text(self):
         return """    otherwise:
-%s""" % "\n".join([statement.text() for statement in self.statements])
+{0!s}""".format("\n".join([statement.text() for statement in self.statements]))
 
     def html(self):
         return """<dt>Otherwise</dt>
 <dd>
-%s
-</dd>""" % "\n".join([statement.html() for statement in self.statements])
+{0!s}
+</dd>""".format("\n".join([statement.html() for statement in self.statements]))
 
 class Statement:
     def __init__(self):
@@ -159,22 +159,22 @@ class Assignment(Statement,IdGenerator):
         self.prefix = case.prefix
 
     def text(self):
-        return "      %s := %s" % (self.lval, self.rval)
+        return "      {0!s} := {1!s}".format(self.lval, self.rval)
 
     def html(self):
-        return """<p>Set %s to %s.</p>""" % (self.lvalHtml(), self.rvalHtml())
+        return """<p>Set {0!s} to {1!s}.</p>""".format(self.lvalHtml(), self.rvalHtml())
 
     def lvalHtml(self):
-        return """<var title="">%s</var>""" % self.lval
+        return """<var title="">{0!s}</var>""".format(self.lval)
 
     def rvalHtml(self):
         if self.rval in constants:
             return self.rval
         elif self.variables_re.match(self.rval):
-            return """the value of <var title="%s">%s</var>""" % (
+            return """the value of <var title="{0!s}">{1!s}</var>""".format(
                 self.title_from_string(self.rval), self.rval)
         else:
-            return "\"<a href=#%s title=\"%s\">%s</a>\"" % (
+            return "\"<a href=#{0!s} title=\"{1!s}\">{2!s}</a>\"".format(
                 self.id_from_string(self.rval),
                 self.title_from_string(self.rval),
                 self.rval)
@@ -185,14 +185,14 @@ class Buffer(Statement):
         self.variable = var
 
     def text(self):
-        return "      buffer %s" % self.variable
+        return "      buffer {0!s}".format(self.variable)
 
     def html(self):
-        return """<p>Append %s to <var title="">buffer</var>.</p>
-""" % self.varHtml()
+        return """<p>Append {0!s} to <var title="">buffer</var>.</p>
+""".format(self.varHtml())
 
     def varHtml(self):
-        return """<var title="">%s</var>""" % self.variable
+        return """<var title="">{0!s}</var>""".format(self.variable)
 
 class Decrement(Statement):
     def __init__(self, var):
@@ -200,13 +200,13 @@ class Decrement(Statement):
         self.variable = var
 
     def text(self):
-        return "      dec %s" % self.variable
+        return "      dec {0!s}".format(self.variable)
 
     def html(self):
-        return """<p>Decrement %s by one.</p>""" % self.varHtml()
+        return """<p>Decrement {0!s} by one.</p>""".format(self.varHtml())
 
     def varHtml(self):
-        return """<var title="">%s</var>""" % self.variable
+        return """<var title="">{0!s}</var>""".format(self.variable)
 
 class Nop(Statement):
     def __init__(self):
@@ -225,13 +225,13 @@ class Post(Statement):
         self.target = post_target
 
     def text(self):
-        return "      post %s" % self.variable
+        return "      post {0!s}".format(self.variable)
 
     def html(self):
-        return """<p>Append %s to %s.</p>""" % (self.varHtml(), self.target)
+        return """<p>Append {0!s} to {1!s}.</p>""".format(self.varHtml(), self.target)
 
     def varHtml(self):
-        return """<var title="">%s</var>""" % self.variable
+        return """<var title="">{0!s}</var>""".format(self.variable)
 
 class Predefined(Statement,IdGenerator):
     def __init__(self, statement, prefix):
@@ -240,10 +240,10 @@ class Predefined(Statement,IdGenerator):
         self.prefix = prefix
 
     def text(self):
-        return "      %s" % self.statement
+        return "      {0!s}".format(self.statement)
 
     def html(self):
-        return """<p><a href=#%s title="%s">%s</a>.</p>""" % (self.id_from_string(self.statement),
+        return """<p><a href=#{0!s} title="{1!s}">{2!s}</a>.</p>""".format(self.id_from_string(self.statement),
        self.title_from_string(self.statement),
        self.statement.capitalize())
 
@@ -300,12 +300,12 @@ class StateMachine:
             self.state = IN_CONDITION
 
     def process_line(self, line):
-        debug("process_line(%s) in state %s" % (line, self.state))
+        debug("process_line({0!s}) in state {1!s}".format(line, self.state))
         if self.state == IN_PREAMBLE:
             var_decls = parse_var_decls.match(line)
             if var_decls is not None:
                 self.variables = var_decls.group(1).split(", ")
-                self.variables_re_str = "(%s)" % list_re(self.variables)
+                self.variables_re_str = "({0!s})".format(list_re(self.variables))
                 self.variables_re = re.compile(self.variables_re_str)
                 return
             targets = parse_targets.match(line)
@@ -318,7 +318,7 @@ class StateMachine:
             predefs = parse_defined_above.match(line)
             if predefs is not None:
                 self.predefineds = predefs.group(1).split(", ")
-                self.predefined_re = re.compile("^\s*(%s)$" % list_re(self.predefineds))
+                self.predefined_re = re.compile("^\s*({0!s})$".format(list_re(self.predefineds)))
                 return
             xrefs = parse_xref_prefix.match(line)
             if xrefs is not None:
@@ -326,7 +326,7 @@ class StateMachine:
                 return
             switch = parse_switch.match(line)
             if switch is not None:
-                self.condition_re = re.compile("^\s*(%s)=(%s|eof|[-.A-Za-z](/[A-Za-z])*)( (if|unless)( (%s|numbers are( not)? coming)))?:$" % (
+                self.condition_re = re.compile("^\s*({0!s})=({1!s}|eof|[-.A-Za-z](/[A-Za-z])*)( (if|unless)( ({2!s}|numbers are( not)? coming)))?:$".format(
                     self.variables_re_str,
                     list_re(common_microsyntaxes),
                     self.variables_re_str))
@@ -371,12 +371,12 @@ class StateMachine:
                 return
 
     def text(self):
-        return """parse using %s
-posting to: %s
-buffering to: %s
-defined above: %s
-prefix xrefs with "%s"
-%s""" % (self.variables, self.posting_to, self.buffering_to,
+        return """parse using {0!s}
+posting to: {1!s}
+buffering to: {2!s}
+defined above: {3!s}
+prefix xrefs with "{4!s}"
+{5!s}""".format(self.variables, self.posting_to, self.buffering_to,
         self.predefined_re, self.switch.prefix, self.switch.text())
 
     def html(self):
