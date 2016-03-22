@@ -33,14 +33,14 @@ def main(stdin, stdout, select='w3c-html', branch="master"):
       content = open(os.path.join(bp_dir, name)).read()
     else:
       content = match.group(0)
-      sys.stderr.write("Missing file: %s\n" % name)
+      sys.stderr.write("Missing file: {0!s}\n".format(name))
 
     # use content as the replacement
     return content
   header = re.sub('<!--BOILERPLATE ([-.\w]+)-->', boilerplate, header)
 
   source = stdin.read()
-  source = re.compile('^.*?<!--START %s-->' % select, re.DOTALL).sub('', source)
+  source = re.compile('^.*?<!--START {0!s}-->'.format(select), re.DOTALL).sub('', source)
   source = re.sub('<!--BOILERPLATE ([-.\w]+)-->', boilerplate, source)
 
   content =  header.decode("utf8") + source.decode("utf8")
@@ -52,7 +52,7 @@ def main(stdin, stdout, select='w3c-html', branch="master"):
     def adjust_header(match):
       slash = match.group(1)
       n = int(match.group(2)) - delta
-      return "<%sh%d>" % (slash, n)
+      return "<{0!s}h{1:d}>".format(slash, n)
 
     headers = re.compile("<(/?)h([0-6])>", re.IGNORECASE)
     before = text[0:pos]
@@ -69,7 +69,7 @@ def main(stdin, stdout, select='w3c-html', branch="master"):
     current_position = 0
     adjustment = 0
 
-    fixups = re.compile("<!--FIXUP %s ([+-])([0-9])-->" % select)
+    fixups = re.compile("<!--FIXUP {0!s} ([+-])([0-9])-->".format(select))
 
     fixup = fixups.search(content, current_position)
     while fixup is not None:
@@ -92,8 +92,8 @@ def main(stdin, stdout, select='w3c-html', branch="master"):
     return content
   content = process_fixup(content)
 
-  content = re.compile('<!--END %s-->.*?<!--START %s-->' % (select,select), re.DOTALL).sub('', content)
-  content = re.compile('<!--END %s-->.*' % select, re.DOTALL).sub('', content)
+  content = re.compile('<!--END {0!s}-->.*?<!--START {1!s}-->'.format(select, select), re.DOTALL).sub('', content)
+  content = re.compile('<!--END {0!s}-->.*'.format(select), re.DOTALL).sub('', content)
 
   content = re.sub('<!--(START|END) [-\w]+-->\n?', '', content)
 

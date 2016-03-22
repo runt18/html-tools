@@ -9,11 +9,11 @@ from lxml import etree
 
 def invoked_incorrectly():
     specs = config.load_config().keys()
-    sys.stderr.write("Usage: python %s [%s]\n" % (sys.argv[0],'|'.join(specs)))
+    sys.stderr.write("Usage: python {0!s} [{1!s}]\n".format(sys.argv[0], '|'.join(specs)))
     exit()
 
 spaceCharacters = "".join(spaceCharacters)
-spacesRegex = re.compile("[%s]+" % spaceCharacters)
+spacesRegex = re.compile("[{0!s}]+".format(spaceCharacters))
 non_ifragment = re.compile("[^A-Za-z0-9._~!$&'()*+,;=:@/\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF\U00010000-\U0001FFFD\U00020000-\U0002FFFD\U00030000-\U0003FFFD\U00040000-\U0004FFFD\U00050000-\U0005FFFD\U00060000-\U0006FFFD\U00070000-\U0007FFFD\U00080000-\U0008FFFD\U00090000-\U0009FFFD\U000A0000-\U000AFFFD\U000B0000-\U000BFFFD\U000C0000-\U000CFFFD\U000D0000-\U000DFFFD\U000E1000-\U000EFFFD]+")
 def generateID(source, el):
     source = source.strip(spaceCharacters).lower()
@@ -30,7 +30,7 @@ def generateID(source, el):
 
     i = 0
     while utils.getElementById(el.getroottree().getroot(), id) is not None:
-        id = "%s-%i" % (source, i)
+        id = "{0!s}-{1:d}".format(source, i)
         i += 1
     utils.ids[el.getroottree().getroot()][id] = el
     return id
@@ -54,8 +54,8 @@ def main(spec, spec_dir, branch="master"):
             else:
                 spec_dir = os.path.join(conf["output"], spec)
     except KeyError:
-        sys.stderr.write("error: Must specify output directory for %s! \
-Check default-config.json.\n" % spec)
+        sys.stderr.write("error: Must specify output directory for {0!s}! \
+Check default-config.json.\n".format(spec))
         exit()
 
     cur_dir = os.path.abspath(os.path.dirname(__file__))
@@ -83,8 +83,8 @@ Check default-config.json.\n" % spec)
     try:
         boilerplate.main(succint, filtered, select, branch)
     except IOError:
-        sys.stderr.write("error: Problem loading boilerplate for %s. \
-Are you on the correct branch?\n" % spec)
+        sys.stderr.write("error: Problem loading boilerplate for {0!s}. \
+Are you on the correct branch?\n".format(spec))
         exit()
     succint.close()
 
@@ -195,7 +195,7 @@ Are you on the correct branch?\n" % spec)
     print "processing references"
     for dt in tree.findall("//dt[@id]"):
         refID = dt.get("id")
-        if refID.startswith("refs") and len(tree.findall("//a[@href='#%s']" % refID)) == 0:
+        if refID.startswith("refs") and len(tree.findall("//a[@href='#{0!s}']".format(refID))) == 0:
             next = dt.getnext()
             while next.tag != "dd":
                 next = next.getnext()
@@ -262,12 +262,12 @@ Are you on the correct branch?\n" % spec)
     if spec == 'html':
         print 'cleaning'
         from glob import glob
-        for name in glob("%s/*.html" % spec_dir):
+        for name in glob("{0!s}/*.html".format(spec_dir)):
             os.remove(name)
 
         output = StringIO()
     else:
-        output = open("%s/Overview.html" % spec_dir, 'wb')
+        output = open("{0!s}/Overview.html".format(spec_dir), 'wb')
 
     generator.toFile(tree, output, **opts)
 
@@ -283,7 +283,7 @@ Are you on the correct branch?\n" % spec)
             interface_index(output, index)
             value = value.replace("<!--INTERFACES-->\n", index.getvalue(), 1)
             index.close()
-        output = open("%s/single-page.html" % spec_dir, 'wb')
+        output = open("{0!s}/single-page.html".format(spec_dir), 'wb')
         output.write(value)
         output.close()
         value = ''
@@ -293,11 +293,11 @@ Are you on the correct branch?\n" % spec)
         spec_splitter.w3c = True
         spec_splitter.no_split_exceptions = conf.get("no_split_exceptions", False)
         spec_splitter.minimal_split_exceptions = conf.get("minimal_split_exceptions", False)
-        spec_splitter.main("%s/single-page.html" % spec_dir, spec_dir)
+        spec_splitter.main("{0!s}/single-page.html".format(spec_dir), spec_dir)
 
         print 'entities'
         entities = open(os.path.join(cur_dir, "boilerplate/entities.inc"))
-        json = open("%s/entities.json" % spec_dir, 'w')
+        json = open("{0!s}/entities.json".format(spec_dir), 'w')
         from entity_processor_json import entity_processor_json
         entity_processor_json(entities, json)
         entities.close()
@@ -309,10 +309,10 @@ Are you on the correct branch?\n" % spec)
         if not isinstance(targets, types.ListType): targets = [targets]
         if os.name == "nt":
             for target in targets:
-                os.system("xcopy /s %s %s" % (os.path.join(conf["path"], target), spec_dir))
+                os.system("xcopy /s {0!s} {1!s}".format(os.path.join(conf["path"], target), spec_dir))
         else:
             for target in targets:
-                os.system("/bin/csh -i -c '/bin/cp -R %s %s'" % (os.path.join(conf["path"], target), spec_dir))
+                os.system("/bin/csh -i -c '/bin/cp -R {0!s} {1!s}'".format(os.path.join(conf["path"], target), spec_dir))
 
     print "copying"
     if spec == "html":

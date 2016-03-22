@@ -12,19 +12,16 @@ def entity_processor_json(input, json):
     if len(points) == 1:
       codepoint = int(points[0], 16)
       if codepoint <= 0xFFFF:
-        data = '"codepoints": [%d], "characters": "\u%0.4X"' %  \
-          (codepoint, codepoint)
+        data = '"codepoints": [{0:d}], "characters": "\u{1:0.4X}"'.format(codepoint, codepoint)
       else:
         highSurrogate = int(math.floor((codepoint - 0x10000) / 0x400) + 0xD800)
         lowSurrogate = int((codepoint - 0x10000) % 0x400 + 0xDC00)
-        data = '"codepoints": [%d], "characters": "\u%0.4X\u%0.4X"' %\
-          (codepoint, highSurrogate, lowSurrogate)
+        data = '"codepoints": [{0:d}], "characters": "\u{1:0.4X}\u{2:0.4X}"'.format(codepoint, highSurrogate, lowSurrogate)
     else:
       points = map(lambda s: int(s, 16), points)
-      data = '"codepoints": [%d, %d], "characters": "\u%0.4X\u%0.4X"' %\
-        (points[0], points[1], points[0], points[1])
+      data = '"codepoints": [{0:d}, {1:d}], "characters": "\u{2:0.4X}\u{3:0.4X}"'.format(points[0], points[1], points[0], points[1])
     if last: json.write(last + ',\n')
-    last = '  "&%s": { %s }' % (name, data)
+    last = '  "&{0!s}": {{ {1!s} }}'.format(name, data)
   json.write(last + "\n")
   json.write('}\n')
 

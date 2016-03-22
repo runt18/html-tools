@@ -164,7 +164,7 @@ def main(input, output):
   # Stuff for fixing up references:
 
   def get_page_filename(name):
-      return '%s.html' % name
+      return '{0!s}.html'.format(name)
 
   # Finds all the ids and remembers which page they were on
   id_pages = {}
@@ -182,13 +182,13 @@ def main(input, output):
               id = e.get('href')[1:]
               if id in id_pages:
                   if id_pages[id] != page: # only do non-local links
-                      e.set('href', '%s#%s' % (get_page_filename(id_pages[id]), id))
+                      e.set('href', '{0!s}#{1!s}'.format(get_page_filename(id_pages[id]), id))
               else:
                   missing_warnings.add(id)
 
   def report_broken_refs():
       for id in sorted(missing_warnings):
-          print "warning: can't find target for #%s" % id
+          print "warning: can't find target for #{0!s}".format(id)
 
   pages = [] # for saving all the output, so fix_refs can be called in a second pass
 
@@ -250,8 +250,8 @@ def main(input, output):
   for heading in child_iter:
       # Handle the heading for this section
       title, name = get_heading_text_and_id(heading)
-      if name == index_page: name = 'section-%s' % name
-      if verbose: print '  <%s> %s - %s' % (heading.tag, name, title)
+      if name == index_page: name = 'section-{0!s}'.format(name)
+      if verbose: print '  <{0!s}> {1!s} - {2!s}'.format(heading.tag, name, title)
 
       page = deepcopy(doc)
       page_body = page.find('body')
@@ -295,28 +295,28 @@ def main(input, output):
       if i > 1:
           href = get_page_filename(pages[i-1][0])
           title = pages[i-1][2]
-          a = etree.XML(u'<a href="%s">\u2190 %s</a>' % (href, title))
+          a = etree.XML(u'<a href="{0!s}">\u2190 {1!s}</a>'.format(href, title))
           a.tail = u' \u2013\n   '
           nav.append(a)
-          link = etree.XML('<link href="%s" title="%s" rel="prev"/>' % (href, title))
+          link = etree.XML('<link href="{0!s}" title="{1!s}" rel="prev"/>'.format(href, title))
           link.tail = '\n  '
           head.append(link)
 
-      a = etree.XML('<a href="%s.html#contents">Table of contents</a>' % index_page)
+      a = etree.XML('<a href="{0!s}.html#contents">Table of contents</a>'.format(index_page))
       a.tail = '\n  '
       nav.append(a)
-      link = etree.XML('<link href="%s.html#contents" title="Table of contents" rel="contents"/>' % index_page)
+      link = etree.XML('<link href="{0!s}.html#contents" title="Table of contents" rel="contents"/>'.format(index_page))
       link.tail = '\n  '
       head.append(link)
 
       if i != len(pages)-1:
           href = get_page_filename(pages[i+1][0])
           title = pages[i+1][2]
-          a = etree.XML(u'<a href="%s">%s \u2192</a>' % (href, title))
+          a = etree.XML(u'<a href="{0!s}">{1!s} \u2192</a>'.format(href, title))
           a.tail = '\n  '
           nav.append(a)
           a.getprevious().tail = u' \u2013\n   '
-          link = etree.XML('<link href="%s" title="%s" rel="next"/>' % (href, title))
+          link = etree.XML('<link href="{0!s}" title="{1!s}" rel="next"/>'.format(href, title))
           link.tail = '\n  '
           head.append(link)
 
@@ -398,9 +398,9 @@ def main(input, output):
           f.write(etree.tostring(doc, pretty_print=False, method="html"))
 
   # Generate the script to fix broken links
-  f = open('%s/fragment-links.js' % (output), 'w')
-  links = ','.join("'%s':'%s'" % (k.replace("\\", "\\\\").replace("'", "\\'"), v) for (k,v) in id_pages.items())
-  f.write('var fragment_links = { ' + re.sub(r"([^\x20-\x7f])", lambda m: "\\u%04x" % ord(m.group(1)), links) + ' };\n')
+  f = open('{0!s}/fragment-links.js'.format((output)), 'w')
+  links = ','.join("'{0!s}':'{1!s}'".format(k.replace("\\", "\\\\").replace("'", "\\'"), v) for (k,v) in id_pages.items())
+  f.write('var fragment_links = { ' + re.sub(r"([^\x20-\x7f])", lambda m: "\\u{0:04x}".format(ord(m.group(1))), links) + ' };\n')
   f.write("""
   var fragid = window.location.hash.substr(1);
   if (!fragid) { /* handle section-foo.html links from the old multipage version, and broken foo.html from the new version */
